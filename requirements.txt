@@ -1,0 +1,7 @@
+# QLoRA 微调所需（AutoDL PyTorch 镜像一般已带 torch，只需补下面这些）
+transformers>=4.44
+peft>=0.12
+bitsandbytes>=0.43
+datasets>=2.20
+accelerate>=0.33
+sentencepiece
