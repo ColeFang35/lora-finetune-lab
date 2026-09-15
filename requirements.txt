@@ -1,4 +1,10 @@
-# QLoRA 微调所需（AutoDL PyTorch 镜像一般已带 torch，只需补下面这些）
+# ⚠️ 重要：AutoDL 镜像已自带 torch（且 torchvision 与它版本匹配）。
+# 直接 `pip install -r` 可能把 torch 升级，导致 torchvision 编译版本对不上，
+# 报 `RuntimeError: operator torchvision::nms does not exist`。
+#
+# 出现该报错时：pip uninstall -y torchvision   （纯文本微调用不到它）
+#
+# 更稳的做法：先 `pip install -U pip`，再逐条装、避免解析器动 torch：
 transformers>=4.44
 peft>=0.12
 bitsandbytes>=0.43
