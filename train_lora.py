@@ -39,8 +39,25 @@ def parse_args() -> argparse.Namespace:
     return ap.parse_args()
 
 
+
+def _check_model_path(model: str) -> None:
+    """本地路径但不存在时，给人话提示（否则 transformers 会把它当在线仓库名报一长串栈）。"""
+    import os
+    looks_local = model.startswith("/") or model.startswith("./") or model.startswith("~")
+    if looks_local and not os.path.isdir(os.path.expanduser(model)):
+        raise SystemExit(
+            f"\n[!] 模型路径不存在：{model}\n"
+            f"    请先下载基座模型（国内推荐 ModelScope）：\n"
+            f"      pip install modelscope\n"
+            f"      python -c \"from modelscope import snapshot_download; "
+            f"print(snapshot_download('Qwen/Qwen2.5-1.5B-Instruct', cache_dir='/root/autodl-tmp/models'))\"\n"
+            f"    然后用打印出来的路径跑本脚本。\n"
+        )
+
+
 def main() -> None:
     a = parse_args()
+    _check_model_path(a.model)
     torch.manual_seed(a.seed)
 
     # ---------- 1. 分词器 & 数据 ----------
