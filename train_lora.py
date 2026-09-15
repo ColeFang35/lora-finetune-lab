@@ -106,14 +106,13 @@ def main() -> None:
     model.print_trainable_parameters()     # 打印可训练参数占比（一般是 ~1%）
 
     # ---------- 4. 训练 ----------
-    args = TrainingArguments(
+    common = dict(
         output_dir=a.output_dir + "/ckpt",
         num_train_epochs=a.epochs,
         per_device_train_batch_size=a.batch_size,
         gradient_accumulation_steps=a.grad_accum,
         learning_rate=a.lr,
         lr_scheduler_type="cosine",
-        warmup_ratio=0.03,
         logging_steps=10,
         save_strategy="epoch",
         save_total_limit=1,
@@ -121,6 +120,13 @@ def main() -> None:
         report_to=[],                       # 不接外部追踪
         seed=a.seed,
     )
+    # warmup：transformers 4.x 用 warmup_ratio，5.x 移除了该参数 → 做成版本兼容
+    import transformers
+    print(f"transformers 版本：{transformers.__version__}")
+    try:
+        args = TrainingArguments(warmup_ratio=0.03, **common)
+    except TypeError:
+        args = TrainingArguments(warmup_steps=10, **common)
     trainer = Trainer(
         model=model, args=args, train_dataset=ds,
         data_collator=DataCollatorForSeq2Seq(tok, padding=True, label_pad_token_id=-100),
