@@ -50,9 +50,12 @@ def load_model(base: str, adapter: str | None):
     tok = AutoTokenizer.from_pretrained(base, trust_remote_code=True)
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
-    model = AutoModelForCausalLM.from_pretrained(
-        base, torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True,
-    )
+    # transformers 5.x 把 torch_dtype 改名为 dtype → 做版本兼容
+    kw = dict(device_map="auto", trust_remote_code=True)
+    try:
+        model = AutoModelForCausalLM.from_pretrained(base, dtype=torch.bfloat16, **kw)
+    except TypeError:
+        model = AutoModelForCausalLM.from_pretrained(base, torch_dtype=torch.bfloat16, **kw)
     if adapter:
         model = PeftModel.from_pretrained(model, adapter)
     model.eval()
